@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.views.generic.edit import FormView
+from cotacoes_app.forms import CotacaoForm
 
 # Create your views here.
 class CotacaoFormView(FormView):

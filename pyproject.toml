@@ -7,6 +7,7 @@ authors = ["Thales Evangelista <thales.t@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 Django = "^3.2.9"
+requests = "^2.26.0"
 
 [tool.poetry.dev-dependencies]
 

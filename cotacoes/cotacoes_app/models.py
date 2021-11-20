@@ -1,5 +1,7 @@
 from django.db import models
-
+import datetime
+import requests
+from django.core.validators import MinLengthValidator
 
 class Cotacao(models.Model):
     """
@@ -42,4 +44,14 @@ class Cotacao(models.Model):
             Returns:
                 list(float):  Uma lista com a cotações/valores
         """
-        ...
+        lista_cotacao = []
+        delta = self.data_final - self.data_inicial       # as timedelta
+        for i in range(delta.days + 1):
+            day = self.data_inicial + datetime.timedelta(days=i)
+            lista_cotacao.append(self.get_cotacao_pela_data(day))
+        return lista_cotacao
+
+    def get_cotacao_pela_data(self, date: datetime.date) -> list[float]:
+        payload = {'base': self.modea_base, 'date': date.strftime('%Y-%m-%d')}
+        r = requests.get('https://api.vatcomply.com/rates', params=payload)
+        return r.json()['rates']['BRL']
