@@ -28,6 +28,6 @@ class CotacaoFormView(SingleObjectMixin, FormView):
         return self.render_to_response(self.get_context_data(form=form))
 
     def get(self, request, *args, **kwargs):
-        self.object = Cotacao(data_inicial=datetime.date.today(), data_final=datetime.date.today() + datetime.timedelta(days=5))
+        self.object = Cotacao()
         return super().get(request, *args, **kwargs)
     
