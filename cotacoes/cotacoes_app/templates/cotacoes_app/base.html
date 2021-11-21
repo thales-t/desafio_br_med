@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  {% block title %}<title>Cotações</title>{% endblock %}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link type="text/javascript" href="{% static 'cotacoes_app/js/bootstrap.min.js' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'cotacoes_app/css/bootstrap.min.css' %}">
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-12 ">{% block content %}{% endblock %}</div>
+    </div>
+  </div>
+</body>
+</html>
