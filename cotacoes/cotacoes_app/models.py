@@ -2,6 +2,8 @@ from django.db import models
 import datetime
 import requests
 from django.core.validators import MinLengthValidator
+from workalendar.america import Brazil
+from datetime import date
 
 class Cotacao(models.Model):
     """
@@ -46,10 +48,13 @@ class Cotacao(models.Model):
         """
         lista_cotacao = []
         if self.data_inicial is not None and self.data_final is not None:
+            cal = Brazil()
             delta = self.data_final - self.data_inicial      
             for i in range(delta.days + 1):
                 day = self.data_inicial + datetime.timedelta(days=i)
-                lista_cotacao.append(self.get_cotacao_pela_data(day))
+                if cal.is_working_day(day):
+                    lista_cotacao.append(self.get_cotacao_pela_data(day))
+        print(lista_cotacao)
         return list(dict.fromkeys(lista_cotacao))
 
     def get_cotacao_pela_data(self, date: datetime.date) -> tuple[str, float()]:
@@ -59,3 +64,19 @@ class Cotacao(models.Model):
         payload = {'base': self.moeda_base, 'date': date.strftime('%Y-%m-%d')}
         r = requests.get('https://api.vatcomply.com/rates', params=payload).json()
         return (datetime.datetime.strptime(r['date'], '%Y-%m-%d'), r['rates']['BRL'])
+
+    
+    def __init__(self, *args, **kwargs):
+        super(Cotacao, self).__init__(*args, **kwargs)
+        self.data_inicial, self.data_final = Cotacao.get_data_inicial_e_final()
+
+    @classmethod
+    def get_data_inicial_e_final(cls) -> tuple[date, date]:
+        """
+        Retorna uma tupla para data inicial e data final iniciais 
+        """
+        cal = Brazil()
+        data_final = date.today()
+        data_inicial = cal.add_working_days(data_final , -5)
+        return data_inicial, data_final
+
