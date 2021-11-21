@@ -46,14 +46,14 @@ class TestCotacaoApp(TestCase):
 
     def test_get_cotacao_pela_data(self):
         cotacao_brl = self.cotacao.get_cotacao_pela_data(date = self.cotacao.data_inicial)
-        self.assertEqual(cotacao_brl, 5.287369103882865)
+        self.assertEqual(cotacao_brl, ('2020-04-06', 5.287369103882865))
 
 
     def test_get_cotacao_entre_data_inicial_e_final(self):
         cotacoes_brl = self.cotacao.get_cotacao_entre_data_inicial_e_final()
         self.assertListEqual(cotacoes_brl,
-         [5.287369103882865, 5.206982085438677, 5.219483028240273,
-          5.149167203460017, 5.149167203460017])
+         [('2020-04-06', 5.287369103882865), ('2020-04-07',5.206982085438677), ('2020-04-08', 5.219483028240273),
+          ('2020-04-09', 5.149167203460017), ('2020-04-09', 5.149167203460017)])
 
 
 if __name__ == '__main__':

@@ -21,8 +21,8 @@ class Cotacao(models.Model):
         A data final do intervalo a ser buscado
     """
 
-    data_inicial = models.DateField()
-    data_final = models.DateField()
+    data_inicial = models.DateField(help_text="Por favor, use o seguinte formato: <em>DD/MM/YYYY</em>.")
+    data_final = models.DateField(help_text="Por favor, use o seguinte formato: <em>DD/MM/YYYY</em>.")
 
     #Deve ser possível variar as moedas (real, euro e iene). 
     DOLAR = 'USD'
@@ -33,25 +33,29 @@ class Cotacao(models.Model):
         (EURO, 'Euro'),
         (IENE, 'Iene'),
     }
-    modea_base = models.CharField(max_length=3, validators=[MinLengthValidator(3)], choices=currencies,
+    moeda_base = models.CharField(max_length=3, validators=[MinLengthValidator(3)], choices=currencies,
         default=DOLAR,)
 
-    def get_cotacao_entre_data_inicial_e_final(self) -> list[float]:
+    def get_cotacao_entre_data_inicial_e_final(self) -> list[tuple[str, float()]]:
         """
             Retorna uma lista com as cotações, referente a cada dia entre a data inicial e final
             levando em conta a moeda base escolhida
 
             Returns:
-                list(float):  Uma lista com a cotações/valores
+                list[tuple[str, float()]]:  Um conjunto com a cotações/valores
         """
         lista_cotacao = []
-        delta = self.data_final - self.data_inicial       # as timedelta
-        for i in range(delta.days + 1):
-            day = self.data_inicial + datetime.timedelta(days=i)
-            lista_cotacao.append(self.get_cotacao_pela_data(day))
-        return lista_cotacao
+        if self.data_inicial is not None and self.data_final is not None:
+            delta = self.data_final - self.data_inicial      
+            for i in range(delta.days + 1):
+                day = self.data_inicial + datetime.timedelta(days=i)
+                lista_cotacao.append(self.get_cotacao_pela_data(day))
+        return list(dict.fromkeys(lista_cotacao))
 
-    def get_cotacao_pela_data(self, date: datetime.date) -> list[float]:
-        payload = {'base': self.modea_base, 'date': date.strftime('%Y-%m-%d')}
-        r = requests.get('https://api.vatcomply.com/rates', params=payload)
-        return r.json()['rates']['BRL']
+    def get_cotacao_pela_data(self, date: datetime.date) -> tuple[str, float()]:
+        """
+            Retorna a cotação em relação a moeda base na dada informada
+        """
+        payload = {'base': self.moeda_base, 'date': date.strftime('%Y-%m-%d')}
+        r = requests.get('https://api.vatcomply.com/rates', params=payload).json()
+        return (datetime.datetime.strptime(r['date'], '%Y-%m-%d'), r['rates']['BRL'])
