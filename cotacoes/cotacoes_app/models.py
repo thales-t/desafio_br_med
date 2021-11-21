@@ -21,8 +21,8 @@ class Cotacao(models.Model):
         A data final do intervalo a ser buscado
     """
 
-    data_inicial = models.DateField()
-    data_final = models.DateField()
+    data_inicial = models.DateField(help_text="Por favor, use o seguinte formato: <em>DD/MM/YYYY</em>.")
+    data_final = models.DateField(help_text="Por favor, use o seguinte formato: <em>DD/MM/YYYY</em>.")
 
     #Deve ser possível variar as moedas (real, euro e iene). 
     DOLAR = 'USD'

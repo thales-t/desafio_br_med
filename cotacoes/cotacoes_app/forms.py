@@ -18,25 +18,9 @@ class CotacaoForm(ModelForm):
 
     def clean(self):
         cleaned_data = super(CotacaoForm, self).clean()
-
+        erro = []
         if cleaned_data.get('data_inicial') is None or cleaned_data.get('data_final') is None:
             raise forms.ValidationError('A data inicial e final tem que estar definida!')
-
-        cal = Brazil()
-        data_dia_util_fim = cal.add_working_days(cleaned_data['data_inicial'] , 5)
-        
-        #delta = cleaned_data['data_final'] - cleaned_data['data_inicial'] 
-        if data_dia_util_fim < cleaned_data['data_final']:
-            self._errors['data_inicial'] = self.error_class(
-                ['O período entre data inicial e final tem que ser de no máximo 5 dias úteis!']
-                )
-
-            self._errors['data_inicial'] = self.error_class(
-                ['O período entre data inicial e final tem que ser de no máximo 5 dias úteis!']
-                )
-            raise forms.ValidationError(
-                'O período entre data inicial e final tem que ser de no máximo 5 dias úteis!'
-                )
 
         if cleaned_data['data_inicial'] >  cleaned_data['data_final']:
             self._errors['data_inicial'] = self.error_class(
@@ -46,7 +30,28 @@ class CotacaoForm(ModelForm):
             self._errors['data_inicial'] = self.error_class(
                 ['A data inicial não pode ser maior que a data final!']
                 )
-            raise forms.ValidationError('A data inicial não pode ser maior que a data final!')
+            erro.append(
+                forms.ValidationError(('A data inicial não pode ser maior que a data final!'),
+                 code='intervalo_invalido'))
+
+        cal = Brazil()
+        data_dia_util_fim = cal.add_working_days(cleaned_data['data_inicial'] , 5)
+        if data_dia_util_fim < cleaned_data['data_final']:
+            self._errors['data_inicial'] = self.error_class(
+                ['O período entre data inicial e final tem que ser de no máximo 5 dias úteis!']
+                )
+
+            self._errors['data_final'] = self.error_class(
+                ['O período entre data inicial e final tem que ser de no máximo 5 dias úteis!']
+                )
+            erro.append(forms.ValidationError(
+                ('O período entre data inicial e final tem que ser de no máximo 5 dias úteis!'),
+                 code='max_dias_uteis'
+                )
+            )
+
+        if erro:
+            raise forms.ValidationError(erro)
 
         return cleaned_data
 

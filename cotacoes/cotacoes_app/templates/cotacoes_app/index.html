@@ -21,7 +21,16 @@
 {% block title %}{% endblock title %}
   
 {% block content %}
+  {% if form.non_field_errors %}
+  Por favor verifique:
+    <ol>
+      {% for error in form.non_field_errors %}
+          <li class="invalido-feedback"><strong>{{ error|escape }}</strong></li>
+      {% endfor %}
+    </ol>
+    <br><br>
 
+  {% else %}
     <div id="container"></div>
     <script>
       Highcharts.chart('container', {
@@ -45,7 +54,7 @@
         ]
       });
     </script>
-
+{% endif %}
 
 <form method="post" action="{% url 'cotacoes_app:index' %}" class="row g-3">
     {% csrf_token %}
@@ -54,6 +63,9 @@
       <div class="col-md-6">
         {{ form.data_inicial.label_tag }}
         {{ form.data_inicial }}
+        <small class="form-text text-muted">
+          {{ form.data_inicial.help_text|safe }}
+        </small>
         {% if form.data_inicial.errors %}
           <ol>
             {% for error in form.data_inicial.errors %}
@@ -62,10 +74,12 @@
           </ol>
         {% endif %}
       </div>
-
       <div class="col-md-6">
         {{ form.data_final.label_tag }}
         {{ form.data_final }}
+        <small class="form-text text-muted">
+          {{ form.data_final.help_text|safe }}
+        </small>
         {% if form.data_final.errors %}
           <ol>
             {% for error in form.data_final.errors %}
@@ -74,12 +88,14 @@
           </ol>
         {% endif %}    
       </div>
-      
 
 
       <div class="col-md-6">
         {{ form.moeda_base.label_tag }}
         {{ form.moeda_base }}
+        <small class="form-text text-muted">
+          {{ form.moeda_base.help_text|safe }}
+        </small>
         {% if form.moeda_base.errors %}
           <ol>
             {% for error in form.moeda_base.errors %}
