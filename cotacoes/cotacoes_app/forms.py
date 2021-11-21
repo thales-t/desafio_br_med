@@ -11,8 +11,6 @@ class CotacaoForm(ModelForm):
         self.fields['data_inicial'].initial = date.today()
         self.fields['data_final'].initial = date.today() + timedelta(days=5)
 
-        super(CotacaoForm, self).__init__(*args, **kwargs)
-
 
     def clean(self):
         cleaned_data = super(CotacaoForm, self).clean()

@@ -10,7 +10,7 @@ from datetime import datetime
 class TestCotacaoApp(TestCase):
     cotacao = None
     r = None
-
+    
     def setUp(self):
         data_inicial = datetime.strptime('2020-04-06', '%Y-%m-%d')
         data_final = datetime.strptime('2020-04-10', '%Y-%m-%d')

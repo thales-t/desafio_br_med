@@ -1,0 +1,16 @@
+{% extends 'cotacoes_app/base.html' %}
+  
+{% block title %}Titulo{% endblock title %}
+  
+{% block content %}
+    <h1>Titulo</h1>
+    teste content
+
+<form method="post" action="{% url 'cotacoes_app:index' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Enviar">
+</form>
+
+{{cotacao.get_cotacao_entre_data_inicial_e_final}}
+{% endblock content %}
