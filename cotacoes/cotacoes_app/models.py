@@ -54,7 +54,6 @@ class Cotacao(models.Model):
                 day = self.data_inicial + datetime.timedelta(days=i)
                 if cal.is_working_day(day):
                     lista_cotacao.append(self.get_cotacao_pela_data(day))
-        print(lista_cotacao)
         return list(dict.fromkeys(lista_cotacao))
 
     def get_cotacao_pela_data(self, date: datetime.date) -> tuple[str, float()]:
@@ -68,7 +67,8 @@ class Cotacao(models.Model):
     
     def __init__(self, *args, **kwargs):
         super(Cotacao, self).__init__(*args, **kwargs)
-        self.data_inicial, self.data_final = Cotacao.get_data_inicial_e_final()
+        if self.data_inicial is None or self.data_final is None:
+            self.data_inicial, self.data_final = Cotacao.get_data_inicial_e_final()
 
     @classmethod
     def get_data_inicial_e_final(cls) -> tuple[date, date]:
