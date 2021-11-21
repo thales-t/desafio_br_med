@@ -12,9 +12,15 @@ class CotacaoFormView(SingleObjectMixin, FormView):
     model = Cotacao
 
     def post(self, request, *args, **kwargs):
-        self.object = Cotacao(data_inicial=datetime.datetime.strptime(self.request.POST['data_inicial'], '%d/%m/%Y'),
-         data_final=datetime.datetime.strptime(self.request.POST['data_final'], '%d/%m/%Y'),
-         modea_base=self.request.POST['modea_base'])
+        try:
+            self.object = Cotacao(data_inicial=datetime.datetime.strptime(self.request.POST['data_inicial'], '%d/%m/%Y'),
+            data_final=datetime.datetime.strptime(self.request.POST['data_final'], '%d/%m/%Y'),
+            moeda_base=self.request.POST['moeda_base'])
+        except Exception as e:
+            print(e)
+            self.object = Cotacao()
+
+
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
