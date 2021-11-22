@@ -4,6 +4,15 @@ import requests
 from django.core.validators import MinLengthValidator
 from workalendar.america import Brazil
 from datetime import date
+from django.db import IntegrityError
+
+MOEDA_BASE = 'USD'
+
+class Currencies(models.TextChoices):
+        REAL = 'BRL', ('Real')
+        EURO = 'EUR', ('Euro')
+        IENE = 'JPY', ('Iene')
+
 
 class Cotacao(models.Model):
     """
@@ -21,22 +30,17 @@ class Cotacao(models.Model):
 
         data_final : date
         A data final do intervalo a ser buscado
+
+        moeda_a_ser_cotada: str
+        A moeda que vai ser comparada em relação ao dolar
     """
 
     data_inicial = models.DateField(help_text="Por favor, use o seguinte formato: <em>DD/MM/YYYY</em>.")
     data_final = models.DateField(help_text="Por favor, use o seguinte formato: <em>DD/MM/YYYY</em>.")
 
-    #Deve ser possível variar as moedas (real, euro e iene). 
-    REAL = 'BRL'
-    EURO = 'EUR'
-    IENE = 'JPY'
-    currencies = {
-        (REAL, 'Real'),
-        (EURO, 'Euro'),
-        (IENE, 'Iene'),
-    }
-    moeda_base = models.CharField(max_length=3, validators=[MinLengthValidator(3)], choices=currencies,
-        default=REAL,)
+
+    moeda_a_ser_cotada = models.CharField(max_length=3, validators=[MinLengthValidator(3)], choices=Currencies.choices,
+        default=Currencies.REAL,)
 
     def get_cotacao_entre_data_inicial_e_final(self) -> list[tuple[str, float()]]:
         """
@@ -60,9 +64,25 @@ class Cotacao(models.Model):
         """
             Retorna a cotação em relação a moeda base na dada informada
         """
-        payload = {'base': self.moeda_base, 'date': date.strftime('%Y-%m-%d')}
-        r = requests.get('https://api.vatcomply.com/rates', params=payload).json()
-        return (datetime.datetime.strptime(r['date'], '%Y-%m-%d'), r['rates']['USD'])
+        #verifica se já tem a cotação guardada
+        try: 
+            cotacao_api = CotacaoAPI.objects.get(data=date, moeda_cotada=self.moeda_a_ser_cotada)
+
+        except CotacaoAPI.DoesNotExist as err:
+            #Se não existir busca na api e salva no BD
+            payload = {'base': MOEDA_BASE, 'date': date.strftime('%Y-%m-%d')}
+            r = requests.get('https://api.vatcomply.com/rates', params=payload).json()
+
+            #Guardando a cotação no BD
+            cotacao_api = CotacaoAPI(valor=r['rates'][self.moeda_a_ser_cotada], 
+                data=datetime.datetime.strptime(r['date'], '%Y-%m-%d').date(),
+                moeda_cotada= self.moeda_a_ser_cotada )
+            try:    
+                cotacao_api.save()
+            except IntegrityError as err:
+                print(err)
+
+        return (cotacao_api.data, cotacao_api.valor)
 
     
     def __init__(self, *args, **kwargs):
@@ -80,3 +100,28 @@ class Cotacao(models.Model):
         data_inicial = cal.add_working_days(data_final , -5)
         return data_inicial, data_final
 
+
+
+class CotacaoAPI(models.Model):
+    """
+        Uma classe que ira guardar as cotações pesquisadas pelos os usuários
+
+        Atributos
+        ----------
+        data : date
+        A data da cotação
+
+        valor : float 
+        Valor da cotação
+
+        moeda_a_ser_cotada: str
+        A moeda que vai ser comparada em relação ao dolar
+    """
+    valor = models.FloatField()
+    data = models.DateField()
+    moeda_cotada = models.CharField(max_length=3, validators=[MinLengthValidator(3)], choices=Currencies.choices)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['data', 'moeda_cotada'], name='cotacao_unica_moeda_dia'),
+        ]

@@ -38,10 +38,10 @@
               type: 'column'
           },
           title: {
-              text: 'Cotação do Real em relação ao {{object.get_moeda_base_display}}'
+              text: 'Cotação do Dolar em relação ao {{object.get_moeda_a_ser_cotada_display}}'
           },
           xAxis: {
-              categories: ['Real',]
+              categories: ['{{object.get_moeda_a_ser_cotada_display}}',]
           },
           series:
           [
@@ -91,14 +91,14 @@
 
 
       <div class="col-md-6">
-        {{ form.moeda_base.label_tag }}
-        {{ form.moeda_base }}
+        {{ form.moeda_a_ser_cotada.label_tag }}
+        {{ form.moeda_a_ser_cotada }}
         <small class="form-text text-muted">
-          {{ form.moeda_base.help_text|safe }}
+          {{ form.moeda_a_ser_cotada.help_text|safe }}
         </small>
-        {% if form.moeda_base.errors %}
+        {% if form.moeda_a_ser_cotada.errors %}
           <ol>
-            {% for error in form.moeda_base.errors %}
+            {% for error in form.moeda_a_ser_cotada.errors %}
                 <li class="invalido-feedback"><strong>{{ error|escape }}</strong></li>
             {% endfor %}
           </ol>

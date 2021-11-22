@@ -2,7 +2,7 @@ from django.views.generic.edit import FormView
 from django.views.generic.detail import SingleObjectMixin
 from cotacoes_app.forms import CotacaoForm
 import datetime
-from cotacoes_app.models import Cotacao
+from cotacoes_app.models import Cotacao, Currencies
 # Create your views here.
 
 
@@ -15,7 +15,7 @@ class CotacaoFormView(SingleObjectMixin, FormView):
         try:
             self.object = Cotacao(data_inicial=datetime.datetime.strptime(self.request.POST['data_inicial'], '%d/%m/%Y'),
             data_final=datetime.datetime.strptime(self.request.POST['data_final'], '%d/%m/%Y'),
-            moeda_base=self.request.POST['moeda_base'])
+            moeda_a_ser_cotada=Currencies(self.request.POST['moeda_a_ser_cotada']))
         except Exception as e:
             print(e)
             self.object = Cotacao()
