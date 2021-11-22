@@ -80,7 +80,8 @@ class Cotacao(models.Model):
             try:    
                 cotacao_api.save()
             except IntegrityError as err:
-                print(err)
+                #Já salvo no banco
+                ...
 
         return (cotacao_api.data, cotacao_api.valor)
 
