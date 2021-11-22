@@ -78,7 +78,7 @@ class Cotacao(models.Model):
                 data=datetime.datetime.strptime(r['date'], '%Y-%m-%d').date(),
                 moeda_cotada= self.moeda_a_ser_cotada )
             try:
-                if CotacaoAPI.objects.get(data=cotacao_api.data, moeda_cotada=cotacao_api.moeda_a_ser_cotada):
+                if CotacaoAPI.objects.get(data=cotacao_api.data, moeda_cotada=cotacao_api.moeda_cotada):
                     #Já esta salvo no banco
                     ...
             except CotacaoAPI.DoesNotExist as err:
