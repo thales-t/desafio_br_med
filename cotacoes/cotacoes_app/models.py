@@ -27,16 +27,16 @@ class Cotacao(models.Model):
     data_final = models.DateField(help_text="Por favor, use o seguinte formato: <em>DD/MM/YYYY</em>.")
 
     #Deve ser possível variar as moedas (real, euro e iene). 
-    DOLAR = 'USD'
+    REAL = 'BRL'
     EURO = 'EUR'
     IENE = 'JPY'
     currencies = {
-        (DOLAR, 'Dolar'),
+        (REAL, 'Real'),
         (EURO, 'Euro'),
         (IENE, 'Iene'),
     }
     moeda_base = models.CharField(max_length=3, validators=[MinLengthValidator(3)], choices=currencies,
-        default=DOLAR,)
+        default=REAL,)
 
     def get_cotacao_entre_data_inicial_e_final(self) -> list[tuple[str, float()]]:
         """
@@ -62,7 +62,7 @@ class Cotacao(models.Model):
         """
         payload = {'base': self.moeda_base, 'date': date.strftime('%Y-%m-%d')}
         r = requests.get('https://api.vatcomply.com/rates', params=payload).json()
-        return (datetime.datetime.strptime(r['date'], '%Y-%m-%d'), r['rates']['BRL'])
+        return (datetime.datetime.strptime(r['date'], '%Y-%m-%d'), r['rates']['USD'])
 
     
     def __init__(self, *args, **kwargs):
