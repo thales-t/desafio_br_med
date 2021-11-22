@@ -34,7 +34,8 @@ class CotacaoForm(ModelForm):
                  code='intervalo_invalido'))
 
         cal = Brazil()
-        if cal.get_working_days_delta(cleaned_data['data_inicial'], cleaned_data['data_final']) >= 5:
+        
+        if cal.add_working_days(cleaned_data['data_inicial'], 5)  != cleaned_data['data_final']:
             self._errors['data_inicial'] = self.error_class(
                 ['O período entre data inicial e final tem que ser de no máximo 5 dias úteis!']
                 )
