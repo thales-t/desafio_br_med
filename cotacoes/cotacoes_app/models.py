@@ -77,9 +77,14 @@ class Cotacao(models.Model):
             cotacao_api = CotacaoAPI(valor=r['rates'][self.moeda_a_ser_cotada], 
                 data=datetime.datetime.strptime(r['date'], '%Y-%m-%d').date(),
                 moeda_cotada= self.moeda_a_ser_cotada )
-            try:    
+            try:
+                if CotacaoAPI.objects.get(data=cotacao_api.data, moeda_cotada=cotacao_api.moeda_a_ser_cotada):
+                    #Já esta salvo no banco
+                    ...
+            except CotacaoAPI.DoesNotExist as err:
                 cotacao_api.save()
             except IntegrityError as err:
+                print(err)
                 #Já salvo no banco
                 ...
 
@@ -98,7 +103,13 @@ class Cotacao(models.Model):
         """
         cal = Brazil()
         data_final = date.today()
-        data_inicial = cal.add_working_days(data_final , -4)
+
+        if cal.is_working_day(data_final):
+            data_inicial = cal.add_working_days(data_final , -4)
+        else:
+            data_inicial = cal.add_working_days(data_final , -5)
+        return data_inicial, data_final
+
         return data_inicial, data_final
 
 
