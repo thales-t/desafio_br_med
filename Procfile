@@ -1,1 +1,1 @@
-web: gunicorn cotacoes/cotacoes/wsgi.py
+web: gunicorn --chdir cotacoes cotacoes.wsgi
