@@ -98,7 +98,7 @@ class Cotacao(models.Model):
         """
         cal = Brazil()
         data_final = date.today()
-        data_inicial = cal.add_working_days(data_final , -5)
+        data_inicial = cal.add_working_days(data_final , -4)
         return data_inicial, data_final
 
 
