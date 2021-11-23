@@ -12,7 +12,6 @@ class DiaUtilValidator:
         self.message = message or self.message
 
     def __call__(self, value):
-    
         cal = Brazil()
         erro_fields = []
         for field in self.fields:

@@ -40,12 +40,12 @@ class CotacaoFormView(SingleObjectMixin, FormView):
 
 
 class CotacaoApiViewSet(viewsets.ModelViewSet):
-    """Listando todas as cotaões"""
+    """Listando todas as cotações"""
     queryset = CotacaoApi.objects.all()
     serializer_class = CotacaoApiSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
     ordering_fields = ['data']
     search_fields = ['data', 'moeda_cotada']
-    filterset_fields = ['moeda_cotada']
-    authentication_classes = [BasicAuthentication]
-    permission_classes = [IsAuthenticated]
+    filterset_fields = ['moeda_cotada', 'data']
+    # authentication_classes = [BasicAuthentication]
+    # permission_classes = [IsAuthenticated]

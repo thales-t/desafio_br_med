@@ -30,6 +30,7 @@ DEBUG = environ['DEBUG']
 
 ALLOWED_HOSTS = ['https://thales-desafio-br-med.herokuapp.com/']
 
+URL_API = environ['URL_API']
 
 # Application definition
 
