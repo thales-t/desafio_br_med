@@ -104,22 +104,21 @@ class Cotacao(models.Model):
     def __init__(self, *args, **kwargs):
         super(Cotacao, self).__init__(*args, **kwargs)
         if self.data_inicial is None or self.data_final is None:
-            self.data_inicial, self.data_final = Cotacao.get_data_inicial_e_final()
+            self.data_inicial, self.data_final = self.get_data_inicial_e_final()
 
-    @classmethod
-    def get_data_inicial_e_final(cls) -> tuple[date, date]:
+    def get_data_inicial_e_final(self) -> tuple[date, date]:
         """
         Retorna uma tupla para data inicial e data final iniciais 
         """
         cal = Brazil()
         data_final = date.today()
 
-        if cal.is_working_day(data_final):
+        #Faz uma busca na api para saber se já tem cotaçâo do dia atual
+        #se ainda não tiver, tem que ser -5
+        if cal.is_working_day(data_final) and self.get_cotacao_pela_data(date=data_final):
             data_inicial = cal.add_working_days(data_final , -4)
         else:
             data_inicial = cal.add_working_days(data_final , -5)
-        return data_inicial, data_final
-
         return data_inicial, data_final
 
 

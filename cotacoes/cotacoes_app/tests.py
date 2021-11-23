@@ -1,22 +1,36 @@
 #from django.test import TestCase
 from django.test import TestCase
 import requests
-from cotacoes_app.models import Cotacao
+from cotacoes_app.models import Cotacao, CotacaoApi
 from datetime import datetime
+from os import environ
+from requests.auth import HTTPBasicAuth
+from rest_framework.test import RequestsClient
+from django.urls import reverse
+from rest_framework import status
+
 
 # Create your tests here.
-
-
 class TestCotacaoApp(TestCase):
     cotacao = None
-    r = None
+    r_vatcomply = None
+    client = None
     
     def setUp(self):
         data_inicial = datetime.strptime('2020-04-06', '%Y-%m-%d')
         data_final = datetime.strptime('2020-04-10', '%Y-%m-%d')
         self.cotacao = Cotacao(data_inicial=data_inicial, data_final=data_final)
+        self.client = RequestsClient()
+        self.client.auth = HTTPBasicAuth('admin', 'admin')
+        self.client.headers.update({'x-test': 'true'})
 
-        self.r = requests.get('https://api.vatcomply.com/rates', params={'base': 'USD', 'date': '2020-04-06'})
+
+
+        self.r_api = requests.get('https://api.vatcomply.com/rates', 
+        params={'moeda_cotada': 'BRL', 'data': '2020-04-06'})
+
+        self.r_vatcomply = requests.get('https://api.vatcomply.com/rates',
+         params={'base': 'USD', 'date': '2020-04-06'})
         """
         {'date': '2020-04-06', 'base': 'USD',
         'rates': {'EUR': 0.9266981744045965, 'USD': 1.0, 'JPY': 108.92410341951627,
@@ -41,8 +55,11 @@ class TestCotacaoApp(TestCase):
     def tearDown(self):
         ...
 
-    def test_conexao_api(self):
-        self.assertEqual(self.r.status_code, 200)
+    def test_conexao_api_vatcomply (self):
+        self.assertEqual(self.r_vatcomply.status_code, 200)
+
+    def test_conexao_api (self):
+        self.assertEqual(self.r_api.status_code, 200)
 
     def test_get_cotacao_pela_data(self):
         cotacao_brl = self.cotacao.get_cotacao_pela_data(date = self.cotacao.data_inicial)
@@ -54,6 +71,26 @@ class TestCotacaoApp(TestCase):
         self.assertListEqual(cotacoes_brl,
          [('2020-04-06', 5.287369103882865), ('2020-04-07',5.206982085438677), ('2020-04-08', 5.219483028240273),
           ('2020-04-09', 5.149167203460017), ('2020-04-09', 5.149167203460017)])
+
+    def test_get_api(self):
+        response = self.client.get(f"{environ['URL_API']}"'cotacaoapi/1/')
+        self.assertEqual(response.data, {'id': 1, 'data': '2021-11-12'})
+
+    
+    def test_post_api(self):
+        """
+        Garantir que foi creado um objeto da CotacaoApi
+        """
+
+        url = f"{environ['URL_API']}cotacaoapi"
+        data = {'data': '2021-11-28', 'moeda_cotada': str(self.cotacao.moeda_a_ser_cotada),
+         'valor': 6.23}
+
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(CotacaoApi.objects.count(), 1)
+        self.assertEqual(CotacaoApi.objects.get().data, '2021-11-28')
+
 
 
 if __name__ == '__main__':
