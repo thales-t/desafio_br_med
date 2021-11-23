@@ -1,0 +1,17 @@
+{
+    "buildpacks": [
+      { "url": "heroku/python" }
+    ],
+
+    "environments": {
+        "test": {
+          "addons": ["heroku-postgresql:in-dyno"],
+          "scripts": {
+            "test-setup": "cotacoes/manage.py migrate && cotacoes/manage.py createsuperuser --noinput --username='admin' --email='admin@admin.com'",
+            "test": "cotacoes/manage.py migrate"
+          }
+        }
+      }
+
+  }
+
