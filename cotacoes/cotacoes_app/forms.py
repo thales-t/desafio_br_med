@@ -9,7 +9,7 @@ class CotacaoForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(CotacaoForm, self).__init__(*args, **kwargs)
 
-        self.fields['data_inicial'].initial, self.fields['data_final'].initial= Cotacao.get_data_inicial_e_final()
+        self.fields['data_inicial'].initial, self.fields['data_final'].initial= self.instance.get_data_inicial_e_final()
 
         for visible in self.visible_fields():
             visible.field.widget.attrs['class'] = 'form-control'
