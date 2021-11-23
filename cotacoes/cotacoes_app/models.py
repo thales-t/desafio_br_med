@@ -56,6 +56,7 @@ class Cotacao(models.Model):
             delta = self.data_final - self.data_inicial      
             for i in range(delta.days + 1):
                 day = self.data_inicial + datetime.timedelta(days=i)
+                #verifica se é dia útil
                 if cal.is_working_day(day):
                     lista_cotacao.append(self.get_cotacao_pela_data(day))
         return list(dict.fromkeys(lista_cotacao))
@@ -66,22 +67,22 @@ class Cotacao(models.Model):
         """
         #verifica se já tem a cotação guardada
         try: 
-            cotacao_api = CotacaoAPI.objects.get(data=date, moeda_cotada=self.moeda_a_ser_cotada)
+            cotacao_api = CotacaoApi.objects.get(data=date, moeda_cotada=self.moeda_a_ser_cotada)
 
-        except CotacaoAPI.DoesNotExist as err:
+        except CotacaoApi.DoesNotExist as err:
             #Se não existir busca na api e salva no BD
             payload = {'base': MOEDA_BASE, 'date': date.strftime('%Y-%m-%d')}
             r = requests.get('https://api.vatcomply.com/rates', params=payload).json()
 
             #Guardando a cotação no BD
-            cotacao_api = CotacaoAPI(valor=r['rates'][self.moeda_a_ser_cotada], 
+            cotacao_api = CotacaoApi(valor=r['rates'][self.moeda_a_ser_cotada], 
                 data=datetime.datetime.strptime(r['date'], '%Y-%m-%d').date(),
                 moeda_cotada= self.moeda_a_ser_cotada )
             try:
-                if CotacaoAPI.objects.get(data=cotacao_api.data, moeda_cotada=cotacao_api.moeda_cotada):
+                if CotacaoApi.objects.get(data=cotacao_api.data, moeda_cotada=cotacao_api.moeda_cotada):
                     #Já esta salvo no banco
                     ...
-            except CotacaoAPI.DoesNotExist as err:
+            except CotacaoApi.DoesNotExist as err:
                 cotacao_api.save()
             except IntegrityError as err:
                 print(err)
@@ -114,7 +115,7 @@ class Cotacao(models.Model):
 
 
 
-class CotacaoAPI(models.Model):
+class CotacaoApi(models.Model):
     """
         Uma classe que ira guardar as cotações pesquisadas pelos os usuários
 
