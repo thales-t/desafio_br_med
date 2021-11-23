@@ -5,6 +5,8 @@ from django.core.validators import MinLengthValidator
 from workalendar.america import Brazil
 from datetime import date
 from django.db import IntegrityError
+from os import environ
+from requests.auth import HTTPBasicAuth
 
 MOEDA_BASE = 'USD'
 
@@ -56,6 +58,7 @@ class Cotacao(models.Model):
             delta = self.data_final - self.data_inicial      
             for i in range(delta.days + 1):
                 day = self.data_inicial + datetime.timedelta(days=i)
+                #verifica se é dia útil
                 if cal.is_working_day(day):
                     lista_cotacao.append(self.get_cotacao_pela_data(day))
         return list(dict.fromkeys(lista_cotacao))
@@ -64,31 +67,38 @@ class Cotacao(models.Model):
         """
             Retorna a cotação em relação a moeda base na dada informada
         """
-        #verifica se já tem a cotação guardada
-        try: 
-            cotacao_api = CotacaoAPI.objects.get(data=date, moeda_cotada=self.moeda_a_ser_cotada)
+        #verifica se já tem a cotação guardada na api
+        payload = {'data': date.strftime('%Y-%m-%d'),
+            'moeda_cotada': str(self.moeda_a_ser_cotada),}
+        api = requests.get(f"{environ['URL_API']}cotacaoapi/", params=payload).json()
 
-        except CotacaoAPI.DoesNotExist as err:
-            #Se não existir busca na api e salva no BD
-            payload = {'base': MOEDA_BASE, 'date': date.strftime('%Y-%m-%d')}
-            r = requests.get('https://api.vatcomply.com/rates', params=payload).json()
+        if api.get('results') and len(api.get('results')) > 0:
+            resultado = api.get('results')[0]
+            if resultado:
+                return (datetime.datetime.strptime(resultado['data'], '%Y-%m-%d').date(), resultado['valor'])
+        else:
+            #Se não tiver na nossa api busca da vatcomply e salva
+            payload_vatcomply = {'base': MOEDA_BASE, 'date': payload['data']}
+            api_vatcomply = requests.get('https://api.vatcomply.com/rates', params=payload).json()
+
+            api_payload_post = {'data': api_vatcomply['date'],
+            'moeda_cotada': str(self.moeda_a_ser_cotada),
+            'valor': api_vatcomply['rates'][self.moeda_a_ser_cotada]}
+            api = requests.post(f"{environ['URL_API']}cotacaoapi/", auth=HTTPBasicAuth('admin', 'admin'),
+             data=api_payload_post)
 
             #Guardando a cotação no BD
-            cotacao_api = CotacaoAPI(valor=r['rates'][self.moeda_a_ser_cotada], 
-                data=datetime.datetime.strptime(r['date'], '%Y-%m-%d').date(),
+            cotacao_api = CotacaoApi(valor=api_payload_post['valor'], 
+                data=api_payload_post['data'],
                 moeda_cotada= self.moeda_a_ser_cotada )
             try:
-                if CotacaoAPI.objects.get(data=cotacao_api.data, moeda_cotada=cotacao_api.moeda_cotada):
-                    #Já esta salvo no banco
-                    ...
-            except CotacaoAPI.DoesNotExist as err:
                 cotacao_api.save()
             except IntegrityError as err:
                 print(err)
                 #Já salvo no banco
                 ...
 
-        return (cotacao_api.data, cotacao_api.valor)
+            return (cotacao_api.data, cotacao_api.valor)
 
     
     def __init__(self, *args, **kwargs):
@@ -114,7 +124,7 @@ class Cotacao(models.Model):
 
 
 
-class CotacaoAPI(models.Model):
+class CotacaoApi(models.Model):
     """
         Uma classe que ira guardar as cotações pesquisadas pelos os usuários
 
