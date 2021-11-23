@@ -2,7 +2,12 @@ from django.views.generic.edit import FormView
 from django.views.generic.detail import SingleObjectMixin
 from cotacoes_app.forms import CotacaoForm
 import datetime
-from cotacoes_app.models import Cotacao, Currencies
+from cotacoes_app.models import Cotacao, Currencies, CotacaoApi
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+from cotacoes_app.serializers import CotacaoApiSerializer
 # Create your views here.
 
 
@@ -31,3 +36,16 @@ class CotacaoFormView(SingleObjectMixin, FormView):
         self.object = Cotacao()
         return super().get(request, *args, **kwargs)
     
+
+
+
+class CotacaoApiViewSet(viewsets.ModelViewSet):
+    """Listando todas as cotações"""
+    queryset = CotacaoApi.objects.all()
+    serializer_class = CotacaoApiSerializer
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
+    ordering_fields = ['data']
+    search_fields = ['data', 'moeda_cotada']
+    filterset_fields = ['moeda_cotada', 'data']
+    # authentication_classes = [BasicAuthentication]
+    # permission_classes = [IsAuthenticated]
