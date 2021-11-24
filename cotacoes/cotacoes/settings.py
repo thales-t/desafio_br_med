@@ -155,8 +155,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-
-# Configure Django App for Heroku.
-import django_heroku
-django_heroku.settings(locals())
-TEST_RUNNER = 'django_heroku.HerokuDiscoverRunner'
+if environ['LOCAL'] is False:
+    # Configure Django App for Heroku.
+    import django_heroku
+    django_heroku.settings(locals())
+    TEST_RUNNER = 'django_heroku.HerokuDiscoverRunner'

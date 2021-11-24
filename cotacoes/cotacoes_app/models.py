@@ -79,7 +79,7 @@ class Cotacao(models.Model):
         else:
             #Se não tiver na nossa api busca da vatcomply e salva
             payload_vatcomply = {'base': MOEDA_BASE, 'date': payload['data']}
-            api_vatcomply = requests.get('https://api.vatcomply.com/rates', params=payload).json()
+            api_vatcomply = requests.get('https://api.vatcomply.com/rates', params=payload_vatcomply).json()
 
             api_payload_post = {'data': api_vatcomply['date'],
             'moeda_cotada': str(self.moeda_a_ser_cotada),
