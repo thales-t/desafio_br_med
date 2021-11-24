@@ -155,7 +155,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-if environ['LOCAL'] is False:
+if environ['LOCAL'] == 'False':
     # Configure Django App for Heroku.
     import django_heroku
     django_heroku.settings(locals())
