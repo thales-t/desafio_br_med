@@ -1,4 +1,3 @@
-#from django.test import TestCase
 from django.test import TestCase
 import requests
 from cotacoes_app.models import Cotacao, CotacaoApi
@@ -9,27 +8,27 @@ from rest_framework.test import RequestsClient
 from django.urls import reverse
 from rest_framework import status
 
-
 # Create your tests here.
 class TestCotacaoApp(TestCase):
     cotacao = None
     r_vatcomply = None
     client = None
     
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
+        print("setUpTestData: Run once to set up non-modified data for all class methods.")
         data_inicial = datetime.strptime('2020-04-06', '%Y-%m-%d')
         data_final = datetime.strptime('2020-04-10', '%Y-%m-%d')
-        self.cotacao = Cotacao(data_inicial=data_inicial, data_final=data_final)
-        self.client = RequestsClient()
-        self.client.auth = HTTPBasicAuth('admin', 'admin')
-        self.client.headers.update({'x-test': 'true'})
+        cls.cotacao = Cotacao(data_inicial=data_inicial, data_final=data_final)
+        cls.client = RequestsClient()
+        cls.client.auth = HTTPBasicAuth('admin', 'admin')
+        cls.client.headers.update({'x-test': 'true'})
 
 
-
-        self.r_api = requests.get('https://api.vatcomply.com/rates', 
+        cls.r_api = requests.get('https://api.vatcomply.com/rates', 
         params={'moeda_cotada': 'BRL', 'data': '2020-04-06'})
 
-        self.r_vatcomply = requests.get('https://api.vatcomply.com/rates',
+        cls.r_vatcomply = requests.get('https://api.vatcomply.com/rates',
          params={'base': 'USD', 'date': '2020-04-06'})
         """
         {'date': '2020-04-06', 'base': 'USD',
@@ -52,7 +51,10 @@ class TestCotacaoApp(TestCase):
         """
         ...
 
-    def tearDown(self):
+
+
+    def setUp(self):
+        print("setUp: Run once for every test method to setup clean data.")
         ...
 
     def test_conexao_api_vatcomply (self):
@@ -74,6 +76,7 @@ class TestCotacaoApp(TestCase):
 
     def test_get_api(self):
         response = self.client.get(f"{environ['URL_API']}"'cotacaoapi/1/')
+        print(f"resposta ---{response}")
         self.assertEqual(response.data, {'id': 1, 'data': '2021-11-12'})
 
     
@@ -82,14 +85,15 @@ class TestCotacaoApp(TestCase):
         Garantir que foi creado um objeto da CotacaoApi
         """
 
-        url = f"{environ['URL_API']}cotacaoapi"
+        url = f"{environ['URL_API']}cotacaoapi/"
+        print(f"dddd {type(url)}")
         data = {'data': '2021-11-28', 'moeda_cotada': str(self.cotacao.moeda_a_ser_cotada),
          'valor': 6.23}
 
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(f"{environ['URL_API']}cotacaoapi/", data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(CotacaoApi.objects.count(), 1)
-        self.assertEqual(CotacaoApi.objects.get().data, '2021-11-28')
+        self.assertEqual(response.data['data'], '2021-11-28')
 
 
 

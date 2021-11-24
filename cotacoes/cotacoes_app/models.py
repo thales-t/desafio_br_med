@@ -104,6 +104,7 @@ class Cotacao(models.Model):
     def __init__(self, *args, **kwargs):
         super(Cotacao, self).__init__(*args, **kwargs)
         if self.data_inicial is None or self.data_final is None:
+            print("naoooooooooooo")
             self.data_inicial, self.data_final = self.get_data_inicial_e_final()
 
     def get_data_inicial_e_final(self) -> tuple[date, date]:

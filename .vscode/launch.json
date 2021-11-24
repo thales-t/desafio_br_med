@@ -13,6 +13,19 @@
                 "runserver"
             ],
             "django": true
-        }
+        },
+        {
+            "name": "Python: Django Debug Single Test",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/cotacoes/manage.py",
+            "args": [
+                "test",
+                "--noinput",
+                "--keepdb",
+                "${file}"
+            ],
+            "django": true
+        },
     ]
 }
